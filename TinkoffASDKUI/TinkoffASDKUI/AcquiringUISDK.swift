@@ -21,6 +21,7 @@ import PassKit
 import TinkoffASDKCore
 import UIKit
 import WebKit
+import TdsSdkIos
 
 public protocol TinkoffPayDelegate: AnyObject {
     func tinkoffPayIsNotAllowed()
@@ -1164,6 +1165,23 @@ public class AcquiringUISDK: NSObject {
                             self?.cancelPayment()
                         }
                     }
+                case let .needConfirmation3DS2AppBased(appBasedData):
+                    DispatchQueue.main.async {
+                        self.on3DSCheckingCompletionHandler = { response in
+                            completionHandler(response)
+                        }
+                        
+                        let challengeParams = ChallengeParameters()
+                        
+                        challengeParams.setAcsTransactionId(appBasedData.acsTransId)
+                        challengeParams.set3DSServerTransactionId(appBasedData.tdsServerTransId)
+//                        challengeParams.setTreeDSRequestorAppURL("https://test-acqapi.payminfra.tcsbank.ru")
+                        challengeParams.setAcsRefNumber(appBasedData.acsRefNumber)
+                        challengeParams.setAcsSignedContent(appBasedData.acsSignedContent)
+                        self.transaction.doChallenge(challengeParameters: challengeParams,
+                                                     challengeStatusReceiver: self,
+                                                     timeout: 20)
+                    }
 
                 case let .done(response):
                     completionHandler(.success(response))
@@ -1192,6 +1210,10 @@ public class AcquiringUISDK: NSObject {
         }) // paymentFinish
     }
 
+    private var paymentSystem: String?
+    private var transaction: Transaction!
+    private var progressView: ProgressDialog!
+    
     private func check3dsVersionAndFinishAuthorize(requestData: PaymentFinishRequestData, completionHandler: @escaping PaymentCompletionHandler) {
         _ = acquiringSdk.check3dsVersion(data: requestData, completionHandler: { checkResponse in
             switch checkResponse {
@@ -1201,16 +1223,72 @@ public class AcquiringUISDK: NSObject {
                 if let tdsServerTransID = checkResult.tdsServerTransID, let threeDSMethodURL = checkResult.threeDSMethodURL {
                     // вызываем web view для проверки девайса
                     self.threeDSMethodCheckURL(tdsServerTransID: tdsServerTransID, threeDSMethodURL: threeDSMethodURL, notificationURL: self.acquiringSdk.confirmation3DSCompleteV2URL().absoluteString, presenter: self.acquiringView)
+                    
+                    
+                    let threeDS2Service = ThreeDS2Service()
+                    let bundle = Bundle.uiResources
+
+                    let configParams = ConfigParameters(["mock" : DevInfoCert(certFilename: "SDK_Test.der",
+                                                                              rootCACertFilename: "CA.der",
+                                                                              directoryServerIDAkaRID: "mock",
+                                                                              certAlgorithm: CertAlgorithm.RSA,
+                                                                              bundle: bundle),
+                                                         "mir": DevInfoCert(certFilename: "SDK_Test.der",
+                                                                            rootCACertFilename: "ACSSubCA.der",
+                                                                            directoryServerIDAkaRID: "mir",
+                                                                            certAlgorithm: CertAlgorithm.RSA,
+                                                                            bundle: bundle)])
+                    
+                    
+                    do {
+                        try threeDS2Service.initialize(configParameters: configParams,
+                                                       uiCustomization: nil,
+                                                       locale: Locale(identifier: "ru_RU"))
+                    } catch {
+                        print(error.localizedDescription)
+                    }
+                    
+                    do {
+                        self.transaction = try threeDS2Service.createTransaction(directoryServerID: checkResult.paymentSystem,
+                                                                                 messageVersion: checkResult.version)
+                    } catch {
+                        print(error)
+                        // The operation couldn’t be completed. (TDSSDKIOS.SDKERROR error 0.)
+                    }
+                    
+                    
+                    DispatchQueue.main.async {
+                        self.progressView = self.transaction.getProgressView()
+                        self.progressView.start()
+                    }
+                    
+                    let authParams = try! self.transaction.getAuthenticationRequestParameters()
+                    
                     // собираем информацию о девайсе
                     let screenSize = UIScreen.main.bounds.size
+                    
+                    let deviceDataString = authParams.getDeviceData()
+                    let deviceDataBase64 = Data(deviceDataString.utf8).base64EncodedString()
+                    
+                    let sdkEphemPubKey = authParams.getSDKEphemeralPublicKey()
+                    let sdkEphemPubKeyBase64 = Data(sdkEphemPubKey.utf8).base64EncodedString()
+                    
                     let deviceInfo = DeviceInfoParams(cresCallbackUrl: self.acquiringSdk.confirmation3DSTerminationV2URL().absoluteString,
                                                       languageId: self.acquiringSdk.languageKey?.rawValue ?? "ru",
                                                       screenWidth: Int(screenSize.width),
-                                                      screenHeight: Int(screenSize.height))
+                                                      screenHeight: Int(screenSize.height),
+                                                      sdkAppID: authParams.getSDKAppID(),
+                                                      sdkEphemPubKey: sdkEphemPubKeyBase64,
+                                                      sdkReferenceNumber: authParams.getSDKReferenceNumber(),
+                                                      sdkTransID: authParams.getSDKTransactionID(),
+                                                      sdkEncData: deviceDataBase64)
+                    
                     finistRequestData.setDeviceInfo(info: deviceInfo)
                     finistRequestData.setThreeDSVersion(checkResult.version)
                     finistRequestData.setIpAddress(self.acquiringSdk.networkIpAddress())
+            
                 }
+
                 // завершаем оплату
                 self.finishAuthorize(requestData: finistRequestData, treeDSmessageVersion: checkResult.version) { finishResponse in
                     completionHandler(finishResponse)
@@ -1334,6 +1412,38 @@ public class AcquiringUISDK: NSObject {
         let navigationController = UINavigationController(rootViewController: viewController)
         presentingViewController?.presentOnTop(viewController: navigationController,
                                                animated: true)
+    }
+}
+
+extension AcquiringUISDK: ChallengeStatusReceiver {
+    public func completed(_ completionEvent: CompletionEvent) {
+        print("COMPLETED: \n transID: \(completionEvent.getSdkTransactionID()) \n status: \(completionEvent.getTransactionStatus())")
+        transaction.close()
+        
+        DispatchQueue.main.async {
+            self.progressView.close()
+        }
+    }
+    
+    public func cancelled() {
+        print("CANCELLED")
+
+    }
+    
+    public func timedout() {
+        print("TIMEOUT")
+    }
+    
+    public func protocolError(_ protocolErrorEvent: ProtocolErrorEvent) {
+        print(protocolErrorEvent.getErrorMessage().getErrorDetails())
+        print(protocolErrorEvent.getErrorMessage().getErrorDescription())
+
+        transaction.close()
+    }
+    
+    public func runtimeError(_ runtimeErrorEvent: RuntimeErrorEvent) {
+        print(runtimeErrorEvent.getErrorMessage())
+        transaction.close()
     }
 }
 
@@ -1764,3 +1874,6 @@ extension AcquiringUISDK: WKNavigationDelegate {
         } // document.baseURI
     } // func webView didFinish
 }
+
+
+private class BundleToken {}

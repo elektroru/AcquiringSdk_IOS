@@ -11,12 +11,16 @@ Pod::Spec.new do |spec|
 	spec.platform = :ios
 	spec.module_name = "TinkoffASDKCore"
 	spec.swift_version = '5.0'
-	spec.ios.deployment_target = '11.0'
+	spec.ios.deployment_target = '12.0'
 	spec.source = { :git => 'https://github.com/TinkoffCreditSystems/AcquiringSdk_IOS.git', :tag => spec.version }
 	spec.source_files = 'TinkoffASDKCore/TinkoffASDKCore/**/*.swift'
-  spec.resource_bundles = {
+
+	spec.vendored_frameworks = ['ThirdParty/emvco3ds_protocols_ios.xcframework', 'ThirdParty/TdsSdkIos.xcframework']
+	spec.preserve_paths = ['ThirdParty/emvco3ds_protocols_ios.xcframework', 'ThirdParty/TdsSdkIos.xcframework']
+
+  	spec.resource_bundles = {
       'TinkoffASDKCoreResources' => ['TinkoffASDKCore/TinkoffASDKCore/**/*.{lproj,strings}']
-  }
+  	}
   
 	spec.test_spec 'Tests' do |test_spec|
     	test_spec.source_files = 'TinkoffASDKCore/TinkoffASDKCoreTests/**/*.swift'

@@ -1,0 +1,33 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.2.2 effective-4.2 (swiftlang-1103.0.32.6 clang-1103.0.32.51)
+// swift-module-flags: -target x86_64-apple-ios8.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 4.2 -enforce-exclusivity=checked -O -module-name emvco3ds_protocols_ios
+import Swift
+import UIKit
+import WebKit
+@_exported import emvco3ds_protocols_ios
+@objc public protocol GenericChallengeProtocol {
+  @objc func clickVerifyButton()
+  @objc func getChallengeType() -> Swift.String
+  @objc func clickCancelButton()
+  @objc func setChallengeProtocol(sdkChallengeProtocol: emvco3ds_protocols_ios.SDKChallengeProtocol)
+  @objc func expandTextsBeforeScreenshot()
+  @objc func selectWhitelistChecked(checked: Swift.Bool)
+  @objc func setLandscapeOrientation(landscapeOrientation: Swift.Bool)
+}
+@objc public protocol MultiSelectChallengeProtocol : emvco3ds_protocols_ios.GenericChallengeProtocol {
+  @objc func selectIndex(_ index: Swift.Int)
+}
+@objc public protocol OutOfBandChallengeProtocol : emvco3ds_protocols_ios.GenericChallengeProtocol {
+}
+@objc public protocol SDKChallengeProtocol {
+  @objc func handleChallenge()
+}
+@objc public protocol SingleSelectorChallengeProtocol : emvco3ds_protocols_ios.GenericChallengeProtocol {
+  @objc func selectObject(_ index: Swift.Int)
+}
+@objc public protocol TextChallengeProtocol : emvco3ds_protocols_ios.GenericChallengeProtocol {
+  @objc func typeTextChallengeValue(_ value: Swift.String)
+}
+@objc public protocol WebChallengeProtocol : emvco3ds_protocols_ios.GenericChallengeProtocol {
+  @objc func getWebView() -> WebKit.WKWebView
+}
