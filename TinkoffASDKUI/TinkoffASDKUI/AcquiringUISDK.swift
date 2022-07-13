@@ -1175,12 +1175,11 @@ public class AcquiringUISDK: NSObject {
                         
                         challengeParams.setAcsTransactionId(appBasedData.acsTransId)
                         challengeParams.set3DSServerTransactionId(appBasedData.tdsServerTransId)
-//                        challengeParams.setTreeDSRequestorAppURL("https://test-acqapi.payminfra.tcsbank.ru")
                         challengeParams.setAcsRefNumber(appBasedData.acsRefNumber)
                         challengeParams.setAcsSignedContent(appBasedData.acsSignedContent)
                         self.transaction.doChallenge(challengeParameters: challengeParams,
                                                      challengeStatusReceiver: self,
-                                                     timeout: 20)
+                                                     timeout: 50)
                     }
 
                 case let .done(response):
