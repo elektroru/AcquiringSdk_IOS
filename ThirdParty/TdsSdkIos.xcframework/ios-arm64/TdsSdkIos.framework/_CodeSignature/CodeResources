@@ -46,7 +46,7 @@
 		</data>
 		<key>ChallengeStoryboard.storyboardc/mzs-nG-oBd-view-GDa-Yh-tLY.nib</key>
 		<data>
-		lvIIUPTLXDOo5JreGJzEjvgesxU=
+		9A6Z2k3XRiLd4eImUDdwF6wfcmU=
 		</data>
 		<key>ChallengeStoryboard.storyboardc/nativeMultiSelectChallengeLandscapeVc.nib</key>
 		<data>
@@ -102,11 +102,11 @@
 		</data>
 		<key>Modules/TdsSdkIos.swiftmodule/arm64-apple-ios.swiftinterface</key>
 		<data>
-		t/1R00pM0MBS7/MH3SuU6kF+7uk=
+		x4Ue0EdjtPKxG43Uu/Q3KilOg2I=
 		</data>
 		<key>Modules/TdsSdkIos.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		lN5CE77vxdrF5i0re1pY+f7IVrc=
+		chpvCjBg5H4MbiuYJf04nKB9Wp8=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -189,7 +189,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			susPy4KXfGeOLPMMtqfhq0oVeFHeDkyrEUJWth7Xosk=
+			QQLYS/U1hDF+lqtHqrvL84klRFVkUmR+i/eFDqjhTvo=
 			</data>
 		</dict>
 		<key>ChallengeStoryboard.storyboardc/nativeMultiSelectChallengeLandscapeVc.nib</key>
@@ -280,14 +280,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			qxmpIPIlUqOb2mGyCLuQAQONUGti9oLVM7zPpQW3AQI=
+			5de3A5hHfEEWRr2JcJPNxCxtcQoSuwvx0aVDXHG3UsA=
 			</data>
 		</dict>
 		<key>Modules/TdsSdkIos.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FBrCTqDTg5OpbAtMdDtHjCQ8XT5NnDoQ9f/lO+V5Tbg=
+			SMZRvu1TXx7UsIORDczra8SpdRvHC3SL75dW2Q/GQk0=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

@@ -104,7 +104,9 @@ public struct TransactionCerts {
   public let deviceInfoEncCertDerBytes: Foundation.Data
   public let dsRootCADerBytes: Foundation.Data
   public let algorithm: TdsSdkIos.CertAlgorithm
+  public var directoryServerIDAkaRID: Swift.String?
   public init(deviceInfoEncCertDerBytes: Foundation.Data, dsRootCADerBytes: Foundation.Data, algorithm: TdsSdkIos.CertAlgorithm)
+  public init(deviceInfoEncCertDerBytes: Foundation.Data, dsRootCADerBytes: Foundation.Data, algorithm: TdsSdkIos.CertAlgorithm, directoryServerIDAkaRID: Swift.String)
 }
 public class TextBoxCustomization : TdsSdkIos.Customization {
   override public init()

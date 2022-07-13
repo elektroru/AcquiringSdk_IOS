@@ -1228,13 +1228,8 @@ public class AcquiringUISDK: NSObject {
                     let threeDS2Service = ThreeDS2Service()
                     let bundle = Bundle.uiResources
 
-                    let configParams = ConfigParameters(["mock" : DevInfoCert(certFilename: "SDK_Test.der",
-                                                                              rootCACertFilename: "CA.der",
-                                                                              directoryServerIDAkaRID: "mock",
-                                                                              certAlgorithm: CertAlgorithm.RSA,
-                                                                              bundle: bundle),
-                                                         "mir": DevInfoCert(certFilename: "SDK_Test.der",
-                                                                            rootCACertFilename: "ACSSubCA.der",
+                    let configParams = ConfigParameters(["mir": DevInfoCert(certFilename: "SDK_Test.der",
+                                                                            rootCACertFilename: "CA.der",
                                                                             directoryServerIDAkaRID: "mir",
                                                                             certAlgorithm: CertAlgorithm.RSA,
                                                                             bundle: bundle)])
@@ -1427,11 +1422,21 @@ extension AcquiringUISDK: ChallengeStatusReceiver {
     
     public func cancelled() {
         print("CANCELLED")
+        transaction.close()
+        
+        DispatchQueue.main.async {
+            self.progressView.close()
+        }
 
     }
     
     public func timedout() {
         print("TIMEOUT")
+        transaction.close()
+        
+        DispatchQueue.main.async {
+            self.progressView.close()
+        }
     }
     
     public func protocolError(_ protocolErrorEvent: ProtocolErrorEvent) {
@@ -1439,6 +1444,10 @@ extension AcquiringUISDK: ChallengeStatusReceiver {
         print(protocolErrorEvent.getErrorMessage().getErrorDescription())
 
         transaction.close()
+        
+        DispatchQueue.main.async {
+            self.progressView.close()
+        }
     }
     
     public func runtimeError(_ runtimeErrorEvent: RuntimeErrorEvent) {
